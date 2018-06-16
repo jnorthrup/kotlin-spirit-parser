@@ -110,4 +110,3 @@ val confidence= numeric
 val budget: `==` = "$"() + priority * (";" + durability) + "$"  // two numbers in [0,1]x(0,1)
 val truth: `==` = "%"() + frequency * (";" + confidence) + "%" // two numbers in [0,1]x(0,1)
 val task = `~`[budget] + sentence
-
