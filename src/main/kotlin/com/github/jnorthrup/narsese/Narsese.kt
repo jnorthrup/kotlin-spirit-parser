@@ -1,5 +1,6 @@
 package com.github.jnorthrup.narsese
 
+import com.github.jnorthrup.parser.fsm.Grammar
 import com.github.jnorthrup.parser.overloads.*
 
 /**
@@ -112,5 +113,12 @@ val confidence = numeric
 val budget: `==` = "$"() + numeric..";"+ "$"  // two numbers in [0,1]x(0,1)
 val truth: `==` = "%"() + numeric..";"+ "%" // two numbers in [0,1]x(0,1)
 val task = `~`[budget] + sentence
+
+
+
+suspend fun narseseGrammar() = Grammar(
+        task { System.err.println("insert sideffects here") },
+        term { it: Any -> System.err.println("term returns:" + it) }
+)
 
 

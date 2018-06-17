@@ -119,7 +119,7 @@ val task = (`~`[budget] + sentence)
 
 
 
-suspend fun narseseGrammar() = Grammar(
+suspend fun narcheeseGrammar() = Grammar(
         task { System.err.println("insert sideffects here") },
         term { it: Any -> System.err.println("term returns:" + it) }
 )
