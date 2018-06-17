@@ -38,7 +38,18 @@ class TokenizedLine(val inputLine: String) : AbstractCoroutineContextElement(Tok
         for (function in clause) function.invoke(coroutineContext[TokenizedLine]!!.reset())
     }
 }
+/**
+ * this CoroutineContext holds, and enables execution, of semantic actions.
+ */
 
+class SemanticActions(val onSuccess: MutableMap<`==`, (Any) -> Unit>) : AbstractCoroutineContextElement(SemanticActions) {
+
+    operator fun set(suspendFunction1: `==`, value: (Any) -> Unit) {
+        onSuccess[suspendFunction1] = value
+    }
+
+    companion object Key : CoroutineContext.Key<SemanticActions>
+}
 
 class Grammar(vararg val tokens: `==`) : AbstractCoroutineContextElement(Grammar) {
     companion object Key : CoroutineContext.Key<Grammar>

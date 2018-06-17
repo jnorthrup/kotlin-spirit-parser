@@ -1,9 +1,11 @@
 package com.github.jnorthrup.parser.overloads
 
+ import com.github.jnorthrup.parser.fsm.SemanticActions
 import com.github.jnorthrup.parser.primitives.allOf
 import com.github.jnorthrup.parser.primitives.first
 import com.github.jnorthrup.parser.primitives.opt
 import com.github.jnorthrup.parser.primitives.seq
+import kotlin.coroutines.experimental.coroutineContext
 
 
 typealias `~` = Unit
@@ -30,3 +32,7 @@ operator fun String.get(vararg x: `==`) = { this + opt(*x) } as `==`
 operator fun `==`.get(vararg x: `==`) = { this + opt(*x) } as `==`
 operator fun Any.get(vararg x: `==`) = { opt(*x) } as `==`
 
+/**
+ * actions must always be attached within a suepnd function
+ */
+suspend operator fun `==`.invoke(r: (Any) -> Unit)= this.also{  coroutineContext[SemanticActions]?.set(this, r) }
