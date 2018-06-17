@@ -1,4 +1,6 @@
-package com.github.jnorthrup
+package com.github.jnorthrup.parser.primitives
+import com.github.jnorthrup.parser.fsm.TokenizedLine
+import com.github.jnorthrup.parser.overloads.`==`
 import kotlin.coroutines.experimental.coroutineContext
 
 

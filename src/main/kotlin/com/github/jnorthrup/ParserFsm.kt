@@ -1,27 +1,10 @@
-package com.github.jnorthrup
+package com.github.jnorthrup.parser.fsm
 
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.launch
+import com.github.jnorthrup.parser.overloads.`==`
 import kotlin.coroutines.experimental.AbstractCoroutineContextElement
 import kotlin.coroutines.experimental.CoroutineContext
 import kotlin.coroutines.experimental.coroutineContext
 
-
-class Parser {
-    val publish: Channel<Any> = Channel()
-    fun parse(input: Sequence<String>) {
-
-        launch(WorldInput(input) + Grammar(budget, word)) {
-            for (inputLine in input) {
-                launch(TokenizedLine(inputLine)) {
-
-
-                }
-            }
-        }
-
-    }
-}
 
 class WorldInput(val lines: Sequence<CharSequence>) : AbstractCoroutineContextElement(WorldInput) {
     companion object Key : CoroutineContext.Key<WorldInput>
