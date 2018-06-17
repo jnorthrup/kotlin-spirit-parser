@@ -1,55 +1,43 @@
 package com.github.jnorthrup.parser.primitives
-import com.github.jnorthrup.parser.fsm.TokenizedLine
-import com.github.jnorthrup.parser.overloads.`==`
-import kotlin.coroutines.experimental.coroutineContext
+
+import com.github.jnorthrup.parser.overloads.RewindableSequence
 
 
-fun opt(vararg of: `==`): `==` = {
-    for (function in of) {
-        val reset = coroutineContext[TokenizedLine]!!.reset()
-        val invoke = function.invoke(reset)
+typealias `~` = Unit
+typealias Line = RewindableSequence<String>
+typealias `==` = (Line) -> Any?
+
+/**
+ * zero or one or throw
+ *
+ * @return Sequence of success
+ *
+ */
+fun opt(vararg of: `==`): `==` = { throw  ParseFail(it, *of) }
+
+/**delimitted sequence
+ *
+ * @return Sequence of success
+ *
+ */
+
+fun seq(vararg of: `==`): `==` = { throw  ParseFail(it, *of) }
+
+
+/**
+ * roll through a list or operands until one is not null.
+ *
+ *
+ */
+
+fun first(vararg p: `==`): `==` = { line: Line ->
+    var res: Any? = null
+    for (f in p) {
+        res = f(line.reset()) ?: continue
+
     }
+    res ?: throw ParseFail(line)
 }
 
-/*one or more*/
-fun seq(delim: String, vararg of: `==`): `==` = {
-    for (function in of) {
-        val reset = coroutineContext[TokenizedLine]!!.reset()
-        val invoke = function.invoke(reset)
-    }
-}
 
-/* kleen star anyOf*/
-fun first(vararg of: `==`): `==` = {
-    for (function in of) {
-        val reset = coroutineContext[TokenizedLine]!!.reset()
-        val invoke = function.invoke(reset)
-    }
-}
-
-
-/**allOf*/
-fun allOf(vararg of: `==`): `==` = {
-    var kill = false
-    val res = mutableListOf<Any>()
-    val iterator = of.iterator()
-    loop@ while (iterator.hasNext() && !kill) {
-        val f = iterator.next()
-        val next = f(it)
-        when {
-            next == Unit -> {
-                kill = true
-                break@loop
-            }
-            else -> {
-                res += next
-            }
-        }
-
-    }
-    when {
-        kill -> Unit.also { coroutineContext[TokenizedLine]!!.reset() }
-        else -> res
-    }
-
-}
+class ParseFail(line: Line, vararg of: `==`) : Throwable()

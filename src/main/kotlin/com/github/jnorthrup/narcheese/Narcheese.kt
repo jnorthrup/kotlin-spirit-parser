@@ -2,6 +2,8 @@ package com.github.jnorthrup.narcheese
 
 import com.github.jnorthrup.parser.fsm.Grammar
 import com.github.jnorthrup.parser.overloads.*
+import com.github.jnorthrup.parser.primitives.`==`
+import com.github.jnorthrup.parser.primitives.`~`
 import kotlin.coroutines.experimental.AbstractCoroutineContextElement
 import kotlin.coroutines.experimental.CoroutineContext
 import kotlin.coroutines.experimental.coroutineContext

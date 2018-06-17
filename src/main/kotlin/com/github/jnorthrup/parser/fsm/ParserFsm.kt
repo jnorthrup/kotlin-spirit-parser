@@ -1,9 +1,12 @@
 package com.github.jnorthrup.parser.fsm
 
-import com.github.jnorthrup.parser.overloads.`==`
+import com.github.jnorthrup.parser.overloads.RewindableSequence
+import com.github.jnorthrup.parser.primitives.Line
+import com.github.jnorthrup.parser.primitives.`==`
 import kotlin.coroutines.experimental.AbstractCoroutineContextElement
 import kotlin.coroutines.experimental.CoroutineContext
 import kotlin.coroutines.experimental.coroutineContext
+import kotlin.text.Regex.Companion.fromLiteral
 
 
 class WorldInput(val lines: Sequence<CharSequence>) : AbstractCoroutineContextElement(WorldInput) {
@@ -12,32 +15,16 @@ class WorldInput(val lines: Sequence<CharSequence>) : AbstractCoroutineContextEl
 
 
 class TokenizedLine(val inputLine: String) : AbstractCoroutineContextElement(TokenizedLine) {
+
     companion object Key : CoroutineContext.Key<TokenizedLine>
 
-    var pos = 0
-    var mark: Int = 0
 
-    val line = inputLine.split(Regex("\\s+"))
-    val limit = line.lastIndex
+    val replace =  inputLine    .split(Regex("\\s+"))
 
-    fun advance() = generateSequence {
-        mark = pos
-        when {pos < limit -> line[pos++]
-            else -> null
-        }
-    }
+    val line = RewindableSequence(replace)
 
-
-    fun reset(): Sequence<String> {
-        pos = mark
-        return this.advance()
-    }
-
-
-    suspend fun parse(clause: Sequence<`==`>) {
-        for (function in clause) function.invoke(coroutineContext[TokenizedLine]!!.reset())
-    }
 }
+
 /**
  * this CoroutineContext holds, and enables execution, of semantic actions.
  */
