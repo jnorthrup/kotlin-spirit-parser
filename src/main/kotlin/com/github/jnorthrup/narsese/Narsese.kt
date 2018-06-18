@@ -114,7 +114,7 @@ val durability = numeric
 val confidence = numeric
 val budget = "$"() + numeric..";" + "$"  // two numbers in [0,1]x(0,1)
 val truth = "%"() + numeric..";" + "%" // two numbers in [0,1]x(0,1)
-val task = Unit[budget] + sentence as op
+val task = Unit[budget] + sentence
 
 
 suspend fun narseseGrammar() = Grammar(

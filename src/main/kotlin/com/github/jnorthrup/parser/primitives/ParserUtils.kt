@@ -51,7 +51,8 @@ fun first(vararg p: op): op = { line: Line ->
         res = f(tmp.reset()) ?: continue
 
     }
-    res?.also { line.copy(tmp) } ?: throw ParseFail(line, *p)
+    res?.apply{ line.copy(tmp) }
+            ?: throw ParseFail(line, *p)
 }
 
 
@@ -69,4 +70,4 @@ fun opt(vararg of: op): op = {
     }
 }
 
-class ParseFail(line: Line, vararg of: Any) : Throwable()
+class ParseFail(val line: Line,  vararg val of: Any) : Throwable()

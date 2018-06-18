@@ -6,7 +6,7 @@ package com.github.jnorthrup.parser.overloads
  *
  */
 class RewindableSequence<T : Any>(val origin: List<T>, var mark: Int = 0, var pos: Int = 0) : Sequence<T> {
-    override fun iterator(): Iterator<T> = generateSequence { origin[pos++] }.let { it.iterator() }
+    override fun iterator(): Iterator<T> = generateSequence {  origin.takeIf {origin.size>pos  }?.let{  origin[pos++] } }.iterator()
     fun mark() = apply { mark = pos }
     fun reset() = apply { pos = mark }
     fun rewind() = apply { mark = 0;pos = 0 }
