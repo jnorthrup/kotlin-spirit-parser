@@ -1,10 +1,11 @@
 package com.github.jnorthrup.parser.fsm
 
+import com.github.jnorthrup.narsese.Parser
 import org.junit.Test
 import kotlin.test.assertEquals
 
 
-class NarseseTokenizedLineTest {
+class NarseseLineTokenizerTest {
 
     @Test
     fun testNarsTokens() {
@@ -33,10 +34,10 @@ class NarseseTokenizedLineTest {
         "a - dh - d",
         "a < h > d",
         "a {- } d")
-        /* to update this test input.map(NarseseTokenizedLine.Companion::narsTokens).map { it.joinToString(" ", "\"", "\"") }.forEach(::println);
+        /* to update this test input.map(NarseseTokenizedLine.Companion::tokenize).map { it.joinToString(" ", "\"", "\"") }.forEach(::println);
          */
 
-        val expected = input.map(NarseseTokenizedLine.Companion::narsTokens).map { it.joinToString(" ") }
+        val expected = input.map(Parser.Companion::tokenize).map { it.joinToString(" ") }
         assertEquals(
                 control,
                 expected

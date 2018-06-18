@@ -2,8 +2,8 @@ package com.github.jnorthrup.narsese
 
 import com.github.jnorthrup.parser.fsm.Grammar
 import com.github.jnorthrup.parser.overloads.*
-import com.github.jnorthrup.parser.primitives.`==`
-import com.github.jnorthrup.parser.primitives.`~`
+import com.github.jnorthrup.parser.primitives.op
+import com.github.jnorthrup.parser.primitives.re
 
 /**
 
@@ -59,17 +59,17 @@ import com.github.jnorthrup.parser.primitives.`~`
 <word> : string in an alphabet
 ```
  */
-val numeric: `==` = { it.first().let { if (it.matches(Regex("\\d+"))) it else Unit } }
-val word: `==` = { it.first().let { if (it.matches(Regex("\\w+"))) it else Unit } }
+
+val numeric = re("\\d+(\\.?\\d+)?")
+val word = re("\\w+")
 val sentence // judgment to be remembered
     get() = statement + (
             ("."[tense][truth]) /
                     ("?"[tense]) /   /* question to be answered*/
                     ("!"[truth]))   // goal to be realized
-
 val statement       // two terms related to each other
     get() = ("<" + term + relation + term + ">") / term  // a term can name a statement
-val relation: `==` = "-->" /   /* inheritance*/
+val relation = "-->" /   /* inheritance*/
         "<->" /   /* similarity*/
         "{--" /   /* instance*/
         "--]" /   /* property*/
@@ -96,25 +96,25 @@ val compound_term =
                         "&&" /    // conjunction
                         "&/" / // sequential events
                         "&|") + "," + term.."," + ")")                         // parallel events
-val variable: `==` = ("#" + word) /  // independent variable
+val variable = ("#" + word) /  // independent variable
         ("#" + word + "("["#"() + word] + ")") /  // dependent variable
         "#" /           // anonymous term as place holder
         ("?" + word)// query variable for term to be find
-val term: `==`                          // a statement can serve as a term
+val term: op                           // a statement can serve as a term
     get() = word /                          // an atomic constant term
             variable /         // an atomic variable term
             compound_term /         // a term with internal structure
             statement
-val tense: `==` = ":/:" /   // future event
+val tense = ":/:" /   // future event
         ":|:" /   // present event
         ":\\:"                  // past event
 val frequency = numeric
 val priority = numeric
 val durability = numeric
 val confidence = numeric
-val budget: `==` = "$"() + numeric..";" + "$"  // two numbers in [0,1]x(0,1)
-val truth: `==` = "%"() + numeric..";" + "%" // two numbers in [0,1]x(0,1)
-val task = `~`[budget] + sentence as `==`
+val budget = "$"() + numeric..";" + "$"  // two numbers in [0,1]x(0,1)
+val truth = "%"() + numeric..";" + "%" // two numbers in [0,1]x(0,1)
+val task = Unit[budget] + sentence as op
 
 
 suspend fun narseseGrammar() = Grammar(

@@ -3,17 +3,31 @@ package com.github.jnorthrup.parser.primitives
 import com.github.jnorthrup.parser.overloads.RewindableSequence
 
 
-typealias `~` = Unit
 typealias Line = RewindableSequence<String>
-typealias `==` = (Line) -> Any?
+typealias  op = (Line) -> Any?
+
+infix fun (op).then(p: op): (Line) -> op {
+    return { line: Line ->
+        var r = this
+        r(line)?.let {
+            r = p
+            r(line)
+        }
+                ?: throw ParseFail(line, r)
+        r
+    }
+}
 
 /**
- * zero or one or throw
- *
- * @return Sequence of success
- *
+ * simple regexer
  */
-fun opt(vararg of: `==`): `==` = { throw  ParseFail(it, *of) }
+fun re(lit: String): op = {
+    val token = it.first()
+    token.takeIf {
+        it.matches(Regex.fromLiteral(lit))
+    } ?: throw ParseFail(it, lit)
+}
+
 
 /**delimitted sequence
  *
@@ -21,8 +35,7 @@ fun opt(vararg of: `==`): `==` = { throw  ParseFail(it, *of) }
  *
  */
 
-fun seq(vararg of: `==`): `==` = { throw  ParseFail(it, *of) }
-
+fun seq(vararg of: op): op = { throw  ParseFail(it, *of) }
 
 /**
  * roll through a list or operands until one is not null.
@@ -30,14 +43,30 @@ fun seq(vararg of: `==`): `==` = { throw  ParseFail(it, *of) }
  *
  */
 
-fun first(vararg p: `==`): `==` = { line: Line ->
+fun first(vararg p: op): op = { line: Line ->
+    val tmp = line.clone()
+
     var res: Any? = null
     for (f in p) {
-        res = f(line.reset()) ?: continue
+        res = f(tmp.reset()) ?: continue
 
     }
-    res ?: throw ParseFail(line)
+    res?.also { line.copy(tmp) } ?: throw ParseFail(line, *p)
 }
 
 
-class ParseFail(line: Line, vararg of: `==`) : Throwable()
+/**
+ * one or Unit placeholder
+ *
+ * @return Sequence of success
+ *
+ */
+fun opt(vararg of: op): op = {
+    try {
+        first(*of)
+    } catch (e: ParseFail) {
+        Unit
+    }
+}
+
+class ParseFail(line: Line, vararg of: Any) : Throwable()
