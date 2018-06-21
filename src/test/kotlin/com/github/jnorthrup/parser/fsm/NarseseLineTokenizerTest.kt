@@ -8,7 +8,7 @@ import kotlin.test.assertEquals
 class NarseseLineTokenizerTest {
 
     @Test
-    fun testNarsTokens() {
+    fun testNarsTokenSplitter() {
         val input = listOf("a{-]_",
                 "a{-](silly)",
                 "#Nancy",

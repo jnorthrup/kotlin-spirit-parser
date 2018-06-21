@@ -10,9 +10,9 @@ operator fun op.times(p: op) = this then first(p)
 operator fun op.div(p: op) = first(this, p)
 operator fun op.div(p: String) = this / p()
 operator fun op.get(vararg x: op) = this + opt(*x)
-operator fun op.rangeTo(s: op) = this[s + this]
-operator fun op.rangeTo(s: String) = this[s() + this]
-
+operator fun op.rangeTo(s: op) = this[seq(s + this)]
+operator fun op.rangeTo(s: String) = this.rangeTo(s())
+operator fun op.not(): op = negate(this)
 operator fun String.plus(p: op) = this() + p
 operator fun String.div(p: op) = this() / p
 operator fun String.div(p: String) = this / p()

@@ -9,6 +9,7 @@ import kotlin.coroutines.experimental.coroutineContext
 
 class LineTokenizer(val tokenize: (String) -> Line) : AbstractCoroutineContextElement(LineTokenizer) {
     companion object Key : CoroutineContext.Key<LineTokenizer>
+    var line: Line? = null/*by lazy {tokenize(input)}*/
 
     suspend fun receive(input: String) {
         line = tokenize(input)
@@ -16,7 +17,6 @@ class LineTokenizer(val tokenize: (String) -> Line) : AbstractCoroutineContextEl
         first(*p)
     }
 
-    lateinit var line: Line
-    val reset = line::reset
+    val reset = line?.reset()
 }
 

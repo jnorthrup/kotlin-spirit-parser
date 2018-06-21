@@ -3,6 +3,7 @@ package com.github.jnorthrup.narsese
 import com.github.jnorthrup.parser.overloads.*
 import com.github.jnorthrup.parser.primitives.op
 import com.github.jnorthrup.parser.primitives.re
+import com.github.jnorthrup.parser.primitives.seq
 
 /**
 
@@ -61,13 +62,7 @@ import com.github.jnorthrup.parser.primitives.re
 
 val numeric = re("\\d+(\\.?\\d+)?")
 val word = re("\\w+")
-val sentence // judgment to be remembered
-    get() = statement + (
-            ("."[tense][truth]) /
-                    ("?"[tense]) /   /* question to be answered*/
-                    ("!"[truth]))   // goal to be realized
-val statement       // two terms related to each other
-    get() = ("<" + term + relation + term + ">") / term  // a term can name a statement
+// a term can name a statement
 val relation = "-->" /   /* inheritance*/
         "<->" /   /* similarity*/
         "{--" /   /* instance*/
@@ -80,30 +75,28 @@ val relation = "-->" /   /* inheritance*/
         "<=>" /   /* equivalence*/
         "</>" /   /* predictive equivalence*/
         "<|>"               /* concurrent equivalence*/
-val compound_term =
-        ("{"() + term.."," + "}") /             // extensional set
-                "[" + term.."," + "]" /       // intensional set
-                "(" + "--" + "," + term + ")" /                     // negation
-                ("("() + ("-" /   // extensional difference
-                        "~") + "," + term + "," + term + ")") /    // intensional difference
-                (("&"() /    // extensional intersection
-                        "|" /    // intensional intersection
-                        "*" /    // product
-                        "/" /    // extensional image
-                        "\\" /    // intensional image
-                        "||" /    // disjunction
-                        "&&" /    // conjunction
-                        "&/" / // sequential events
-                        "&|") + "," + term.."," + ")")                         // parallel events
+val compound_term :op
+    get()  =
+    ("{"() + term.."," + "}") /             // extensional set
+            "[" + term.."," + "]" /       // intensional set
+            "(" + "--" + "," + term + ")" /                     // negation
+            ("("() + ("-" /   // extensional difference
+                    "~") + "," + term + "," + term + ")") /    // intensional difference
+            (("&"() /    // extensional intersection
+                    "|" /    // intensional intersection
+                    "*" /    // product
+                    "/" /    // extensional image
+                    "\\" /    // intensional image
+                    "||" /    // disjunction
+                    "&&" /    // conjunction
+                    "&/" / // sequential events
+                    "&|") + "," + term.."," + ")")                         // parallel events
+
 val variable = ("#" + word) /  // independent variable
         ("#" + word + "("["#"() + word] + ")") /  // dependent variable
         "#" /           // anonymous term as place holder
         ("?" + word)// query variable for term to be find
-val term: op                           // a statement can serve as a term
-    get() = word /                          // an atomic constant term
-            variable /         // an atomic variable term
-            compound_term /         // a term with internal structure
-            statement
+
 val tense = ":/:" /   // future event
         ":|:" /   // present event
         ":\\:"                  // past event
@@ -112,7 +105,22 @@ val priority = numeric
 val durability = numeric
 val confidence = numeric
 val budget = "$"() + numeric..";" + "$"  // two numbers in [0,1]x(0,1)
-val truth = "%"() + numeric..";" + "%" // two numbers in [0,1]x(0,1)
-val task = Unit[budget] + sentence
-val experiment= re("[*]+"+(word..word))
+val truth: op   // two numbers in [0,1]x(0,1)
+    get() = "%"() + numeric..";" + "%"
+val term: op
+    get() = word /                          // an atomic constant term
+            variable /         // an atomic variable term
+            compound_term /         // a term with internal structure
+            statement
+val statement : op
+    get() = ("<" + term + relation + term + ">") / term
+val sentence: op     // goal to be realized
+    get() = statement + (
+            ("."[tense][truth]) /
+                    ("?"[tense]) /   /* question to be answered*/
+                    ("!"[truth]))
+val task: op
+    get() = Unit[budget] + sentence
+val experiment: op
+    get() = re("[*]+" )+ seq(word)
 

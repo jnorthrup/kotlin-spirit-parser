@@ -1,8 +1,9 @@
 package com.github.jnorthrup.parser
 
+import com.github.jnorthrup.parser.primitives.Line
 import kotlinx.coroutines.experimental.channels.Channel
 
-interface IParser {
-    val publish: Channel<Any>
-    suspend fun parse( )
-}
+//interface IParser {
+//
+//    suspend fun parse(line: Line): Sequence<Any>
+//}
