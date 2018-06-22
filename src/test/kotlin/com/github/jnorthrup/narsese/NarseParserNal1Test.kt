@@ -1,6 +1,9 @@
 package com.github.jnorthrup.narsese
 
-import com.github.jnorthrup.narsese.Companion.tokenize
+import com.github.jnorthrup.narsese.NarseParser.tokenize
+import com.github.jnorthrup.parser.overloads.div
+import com.github.jnorthrup.parser.overloads.plus
+import com.github.jnorthrup.parser.primitives.*
 import org.junit.Before
 import org.junit.Test
 import java.io.BufferedReader
@@ -15,7 +18,7 @@ class NarseParserNal1Test {
 
         val bufferedReader = BufferedReader(InputStreamReader(resourceAsStream))
 
-        input = generateSequence<String> {
+        input = generateSequence {
             return@generateSequence bufferedReader.readLine()
         }
     }
@@ -24,7 +27,7 @@ class NarseParserNal1Test {
     fun loadNal1() {
 
         input.forEach {
-            print(it);
+            print(it)
 
         }
 
@@ -32,7 +35,6 @@ class NarseParserNal1Test {
 
     @Test
     fun tokenizeNal1() {
-        val narseParser = NarseParser()
 
         val s = input.first()
         val tokenize = tokenize(s)
@@ -42,13 +44,57 @@ class NarseParserNal1Test {
 
     }
 
+    /**
+     * this appears tp the be the perfect terminated line parse with the right amount of catch/goto
+     *
+     */
     @Test
     fun parseExperiment() {
-        val narseParser = NarseParser()
-
         val s = input.first()
-        val tokenize = tokenize(s)
-        val ex = experiment(tokenize)
-        println(ex)
+        val line = tokenize(s)
+        val grammar: op = experiment
+        top@
+        try {
+            for (r: Any? in generateSequence {
+                grammar(line)
+            }) {
+                when (r) {
+                    is Iterable<*> -> (r).forEach(::println)
+                    is Sequence<*> -> (r).forEach(::println)
+
+                    else -> println(arrayOf(r).contentDeepToString())
+                }
+
+            }
+        } catch (_: GotoNext) {
+            null
+        }
+    }
+
+    @Test
+    fun testOr() {
+        val comment = ("//" / "OUT:") + seq (re(".*"))
+        val grammar = (comment / task / experiment / sentence)
+        top@
+
+        input.map(::tokenize).forEach { line ->
+            line % "+"
+            try {
+                generateSequence { grammar(line) }
+                        .forEach {
+                            when (it) {
+                                is Iterable<*> -> (it).forEach(::println)
+                                is Sequence<*> -> (it).forEach(::println)
+                                else -> println(arrayOf(it).contentDeepToString())
+                            }
+
+                        }
+
+            } catch (e: Throwable) {
+            }
+        }
+
     }
 }
+
+infix operator fun Line.rem(t: String) = clone().joinToString(t).also(::println)

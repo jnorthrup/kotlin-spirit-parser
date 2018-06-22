@@ -1,6 +1,7 @@
 package com.github.jnorthrup.narsese
 
 import com.github.jnorthrup.parser.overloads.*
+import com.github.jnorthrup.parser.primitives.Line
 import com.github.jnorthrup.parser.primitives.op
 import com.github.jnorthrup.parser.primitives.re
 import com.github.jnorthrup.parser.primitives.seq
@@ -60,8 +61,8 @@ import com.github.jnorthrup.parser.primitives.seq
 ```
  */
 
-val numeric = re("\\d+(\\.?\\d+)?")
-val word = re("\\w+")
+val numeric: op = { re("\\d+(\\.?\\d+)?")(it) }
+val word: op = { re("\\w+")(it) }
 // a term can name a statement
 val relation = "-->" /   /* inheritance*/
         "<->" /   /* similarity*/
@@ -75,22 +76,7 @@ val relation = "-->" /   /* inheritance*/
         "<=>" /   /* equivalence*/
         "</>" /   /* predictive equivalence*/
         "<|>"               /* concurrent equivalence*/
-val compound_term :op
-    get()  =
-    ("{"() + term.."," + "}") /             // extensional set
-            "[" + term.."," + "]" /       // intensional set
-            "(" + "--" + "," + term + ")" /                     // negation
-            ("("() + ("-" /   // extensional difference
-                    "~") + "," + term + "," + term + ")") /    // intensional difference
-            (("&"() /    // extensional intersection
-                    "|" /    // intensional intersection
-                    "*" /    // product
-                    "/" /    // extensional image
-                    "\\" /    // intensional image
-                    "||" /    // disjunction
-                    "&&" /    // conjunction
-                    "&/" / // sequential events
-                    "&|") + "," + term.."," + ")")                         // parallel events
+// parallel events
 
 val variable = ("#" + word) /  // independent variable
         ("#" + word + "("["#"() + word] + ")") /  // dependent variable
@@ -105,22 +91,55 @@ val priority = numeric
 val durability = numeric
 val confidence = numeric
 val budget = "$"() + numeric..";" + "$"  // two numbers in [0,1]x(0,1)
-val truth: op   // two numbers in [0,1]x(0,1)
+
+val truth   // two numbers in [0,1]x(0,1)
     get() = "%"() + numeric..";" + "%"
-val term: op
-    get() = word /                          // an atomic constant term
+
+val statement by lazy { ("<" + term + relation + term + ">") / term }
+
+val task
+    get() = Unit[budget] + sentence
+
+val experiment
+    get() = re("[*]+") + seq(word)
+
+object term : op {
+    override fun invoke(p1: Line) = (word /                          // an atomic constant term
             variable /         // an atomic variable term
             compound_term /         // a term with internal structure
             statement
-val statement : op
-    get() = ("<" + term + relation + term + ">") / term
-val sentence: op     // goal to be realized
-    get() = statement + (
-            ("."[tense][truth]) /
-                    ("?"[tense]) /   /* question to be answered*/
-                    ("!"[truth]))
-val task: op
-    get() = Unit[budget] + sentence
-val experiment: op
-    get() = re("[*]+" )+ seq(word)
+            )(p1)
+}
 
+object compound_term : op {
+    override fun invoke(p1: Line) = (
+            ("{"() + term.."," + "}") /             // extensional set
+                    "[" + term.."," + "]" /       // intensional set
+                    "(" + "--" + "," + term + ")" /                     // negation
+                    ("("() + ("-" /   // extensional difference
+                            "~") + "," + term + "," + term + ")") /    // intensional difference
+                    (("&"() /    // extensional intersection
+                            "|" /    // intensional intersection
+                            "*" /    // product
+                            "/" /    // extensional image
+                            "\\" /    // intensional image
+                            "||" /    // disjunction
+                            "&&" /    // conjunction
+                            "&/" / // sequential events
+                            "&|") + "," + term.."," + ")"
+                            )
+            )(p1)
+
+}
+
+object sentence : op {
+    override fun invoke(p1: Line) =
+    // goal to be realized
+            (statement +
+                    (
+                            ("."[tense][truth]) /
+                                    ("?"[tense]) /   /* question to be answered*/
+                                    ("!"[truth])
+                            )
+                    )(p1)
+}

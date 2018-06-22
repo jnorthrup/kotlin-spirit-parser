@@ -1,6 +1,6 @@
 package com.github.jnorthrup.parser.fsm
 
-import com.github.jnorthrup.narsese.NarseParser
+import com.github.jnorthrup.narsese.NarseParser.tokenize
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -20,9 +20,9 @@ class NarseseLineTokenizerTest {
                 "a{]",
                 "a-dh-d",
                 "a<h>d",
-                "a{-}d");
+                "a{-}d")
 
-        var control = listOf("a {-] _",
+        val control = listOf("a {-] _",
                 "a {-] ( silly )",
                 "# Nancy",
                 "a {-]",
@@ -37,7 +37,9 @@ class NarseseLineTokenizerTest {
         /* to update this test input.map(NarseseTokenizedLine.Companion::tokenize).map { it.joinToString(" ", "\"", "\"") }.forEach(::println);
          */
 
-        val expected = input.map(NarseParser.Companion::tokenize).map { it.joinToString(" ") }
+        fun spacify(x:Sequence<String>)= x.joinToString { " " }
+        val expected = input.map(::tokenize).map(::spacify)
+
         assertEquals(
                 control,
                 expected

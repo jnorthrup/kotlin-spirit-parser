@@ -18,7 +18,9 @@ operator fun String.div(p: op) = this() / p
 operator fun String.div(p: String) = this / p()
 operator fun String.get(vararg x: op) = this() + opt(*x)
 /**string-literal*/
-operator fun String.invoke(): op = { line -> line.first().takeIf(this::equals) ?: throw ParseFail(line, this) }
+operator fun String.invoke(): op =  {
+    line -> line.mark().first().takeIf(this::equals)
+                ?: throw GotoNext(line.reset(), this) }
 
 operator fun Unit.times(p: op) = first(p)
 operator fun Unit.plus(x: op) = x
