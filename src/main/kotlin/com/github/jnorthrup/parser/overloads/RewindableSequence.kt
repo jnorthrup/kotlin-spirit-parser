@@ -10,11 +10,11 @@ class RewindableSequence<T : Any>(val origin: List<T>, var mark: Int = 0, var po
     fun mark() = apply { mark = pos }
     fun reset() = apply { pos = mark }
     fun rewind() = apply { mark = 0;pos = 0 }
-    fun clone() = RewindableSequence(origin, mark, pos)
+    fun clone() = RewindableSequence(origin, mark)
     fun copy(tmp: RewindableSequence<T>) {
-        assert(tmp.origin===origin)
-        pos=tmp.pos
-        mark=tmp.mark
+        assert(tmp.origin === origin)
+        pos = tmp.pos
+        mark = tmp.mark
     }
 
     /**
