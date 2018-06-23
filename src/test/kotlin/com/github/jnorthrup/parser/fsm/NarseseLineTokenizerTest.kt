@@ -1,8 +1,8 @@
 package com.github.jnorthrup.parser.fsm
 
 import com.github.jnorthrup.narsese.NarseParser.tokenize
+import org.junit.Assert
 import org.junit.Test
-import kotlin.test.assertEquals
 
 
 class NarseseLineTokenizerTest {
@@ -37,12 +37,9 @@ class NarseseLineTokenizerTest {
         /* to update this test input.map(NarseseTokenizedLine.Companion::tokenize).map { it.joinToString(" ", "\"", "\"") }.forEach(::println);
          */
 
-        fun spacify(x:Sequence<String>)= x.joinToString { " " }
+        fun spacify(x: Sequence<String>) = x.joinToString(" ")
         val expected = input.map(::tokenize).map(::spacify)
 
-        assertEquals(
-                control,
-                expected
-        )
+        Assert.assertArrayEquals(control.toTypedArray(), expected.toTypedArray())
     }
 }
