@@ -61,8 +61,8 @@ import com.github.jnorthrup.parser.primitives.seq
 ```
  */
 
-val numeric: op = { re("\\d+(\\.?\\d+)?")(it) }
-val word: op = { re("\\w+")(it) }
+val numeric: op = re("\\d+(\\.?\\d+)?")
+val word: op = re("\\w+")
 // a term can name a statement
 val relation = "-->" /   /* inheritance*/
         "<->" /   /* similarity*/

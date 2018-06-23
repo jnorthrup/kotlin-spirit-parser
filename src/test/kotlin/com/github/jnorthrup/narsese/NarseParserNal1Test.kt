@@ -59,14 +59,13 @@ class NarseParserNal1Test {
                 grammar(line)
             }) {
                 when (r) {
-                    is Iterable<*> -> (r).forEach(::println)
-                    is Sequence<*> -> (r).forEach(::println)
-
+                    is Iterable<*> -> r.forEach(::println)
+                    is Sequence<Any?> -> for (any in r) println(any)
                     else -> println(arrayOf(r).contentDeepToString())
                 }
 
             }
-        } catch (_: GotoNext) {
+        } catch (_: Signal) {
             null
         }
     }
@@ -74,27 +73,24 @@ class NarseParserNal1Test {
     @Test
     fun testOr() {
         val comment = ("//" / "OUT:") + seq (re(".*"))
-        val grammar = (comment / task / experiment / sentence)
+        val grammar = comment / task / experiment / sentence
         top@
 
-        input.map(::tokenize).forEach { line ->
+        for (line in input.map(::tokenize)) {
             line % "+"
-            try {
-                generateSequence { grammar(line) }
-                        .forEach {
-                            when (it) {
-                                is Iterable<*> -> (it).forEach(::println)
-                                is Sequence<*> -> (it).forEach(::println)
-                                else -> println(arrayOf(it).contentDeepToString())
-                            }
 
-                        }
-
-            } catch (e: Throwable) {
+            for (r: Any? in generateSequence {
+                grammar(line)
+            }) when (r) {
+                is Iterable<*> -> r.forEach(::println)
+                is Sequence<Any?> -> for (any in r) {
+                    println(any)
+                }
+                else -> println(arrayOf(r).contentDeepToString())
             }
         }
 
     }
 }
 
-infix operator fun Line.rem(t: String) = clone().joinToString(t).also(::println)
+infix operator fun Line.rem(t: String) = not().joinToString(t).also(::println)
