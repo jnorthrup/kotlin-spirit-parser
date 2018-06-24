@@ -2,9 +2,8 @@ package com.github.jnorthrup.parser.overloads
 
 
 /**
- *
- * if the sequence is overrun, there is a list exception thrown.
- *
+ * this is a sequence serving up random access positions to a potentuially growing list of tokens.
+ * List is the central collection but varargs may also be passed in
  */
 class RewindableSequence<T : Any>(val origin: List<T>, var mark: Int = 0, var pos: Int = mark) : Sequence<T> {
     override fun iterator(): Iterator<T> = generateSequence {
@@ -15,7 +14,7 @@ class RewindableSequence<T : Any>(val origin: List<T>, var mark: Int = 0, var po
 
     }.iterator()
 
-    constructor(vararg x: T) : this(listOf<T>(*x))
+    constructor(vararg x: T) : this(origin = listOf<T>(*x))
 
     fun mark() = apply { mark = pos }
     fun reset() = apply { pos = mark }
