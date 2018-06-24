@@ -1,66 +1,47 @@
 package com.github.jnorthrup.parser.primitives
 
-import com.github.jnorthrup.parser.overloads.div
-import com.github.jnorthrup.parser.overloads.invoke
-import com.github.jnorthrup.parser.overloads.plus
+import com.github.jnorthrup.parser.overloads.*
 import org.junit.Test
+
 
 class ParserUtilsKtTest {
     @Test
-    fun testThen() {
-        val x: op = "a"() + "b"
-        val line: Line = Line(listOf("a", "b"))
-
-        val x1 = x(line)
-        (x1 as Sequence<Any?>).map { it }.forEach(::println)
-        println(line.toString())
-    }
+    fun testThen() = ("a"() + "b") % Line(listOf("a", "b"))
 
     @Test
-    fun testThenThen() {
-        val x: op = "a"() + "b" + "c"
-        val line: Line = Line(listOf("a", "b", "c"))
-
-        val x1 = x(line)
-        (x1 as Sequence<Any?>).forEach {
-            println(
-                    when (it) {is Sequence<Any?> -> it.toList()
-                        else -> it
-                    })
-        }
-
-        @Test
-        fun testThenThen() {
-            val x: op = "a"() + "b" + "c"
-            val line: Line = Line(listOf("a", "b", "c"))
-
-            val x1 = x(line)
-            (x1 as Sequence<Any?>).forEach {
-                println(
-                        when (it) {is Sequence<Any?> -> it.toList()
-                            else -> it
-                        })
-            }
-
-
-        }
-    }
+    fun testThenThen0() = ("a"() + "b" + "c") % Line(listOf("a", "b", "c"))
 
     @Test
-    fun testThenThenOr() {
-        val x: op = "a"() + "b" + "c" / "d"
-        val line: Line = Line(listOf("a", "b", "d"))
-
-        val x1 = x(line)
-        (x1 as Sequence<Any?>).forEach {
-            println(
-
-                    when (it) {is Sequence<Any?> -> it.toList()
-                        else -> it
-                    })
-        }
+    fun testThenThen1() = ("a"() + "b" + "c") % Line(listOf("a", "b", "c"))
 
 
-    }
+    @Test
+    fun testThenThenOr() = ("a"() + "b" + "c" / "d") % Line(listOf("a", "b", "d"))
 
+    @Test
+    fun testNot() = (!"d"()) % Line(listOf("a"))
+
+    @Test
+    fun testNotThen() = (!"d" + "a") % Line(listOf("a"))
+
+    @Test
+    fun testSeq() = seq("a"()) % Line(listOf("a", "a", "a"))
+
+    @Test
+    fun testThenSeq() = ("b"() + seq("a"())) % Line(listOf("b", "a", "a", "a"))
+
+    @Test
+    fun testOptThenSeq0() = (Unit["-"()] + "b"() + seq("a"())) % Line(listOf("b", "a", "a", "a"))
+
+    @Test
+    fun testOptThenSeq1() = (Unit["-"()] + "b"() + seq("a"())) % (Line(listOf("-", "b", "a", "a", "a")))
+
+    @Test
+    fun testSeqThenOp0() = (seq("a"()) + Unit["-"()] + "b"()) % (Line(listOf("a", "a", "b")))
+
+    @Test
+    fun testSeqThenOpt1() = (seq("a"())["-"()] + "b"()) % (Line(listOf("a", "-", "b")))
+
+    @Test
+    fun testSeqThenOpt2() = (seq("a"())["-"()] + "b"()) % Line("a", "a", "a", "b")
 }

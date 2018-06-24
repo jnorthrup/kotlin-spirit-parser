@@ -1,14 +1,6 @@
 package com.github.jnorthrup.narsese
 
-import com.github.jnorthrup.narsese.NarseParser.tokenize
-import com.github.jnorthrup.parser.overloads.div
-import com.github.jnorthrup.parser.overloads.plus
-import com.github.jnorthrup.parser.primitives.*
-import org.junit.Before
-import org.junit.Test
-import java.io.BufferedReader
-import java.io.InputStreamReader
-
+/*
 class NarseParserNal1Test {
     lateinit var input: Sequence<String>
     @Before
@@ -44,10 +36,12 @@ class NarseParserNal1Test {
 
     }
 
-    /**
+    */
+/**
      * this appears tp the be the perfect terminated line parse with the right amount of catch/goto
      *
-     */
+ *//*
+
     @Test
     fun parseExperiment() {
         val s = input.first()
@@ -93,4 +87,4 @@ class NarseParserNal1Test {
     }
 }
 
-infix operator fun Line.rem(t: String) = not().joinToString(t).also(::println)
+*/
