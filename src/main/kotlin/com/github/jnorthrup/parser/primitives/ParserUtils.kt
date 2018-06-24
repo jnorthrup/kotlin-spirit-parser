@@ -9,9 +9,10 @@ typealias  op = (Line) -> Any?
 infix fun op.then(next: op): op = { line: Line ->
     (!line).let { clone: Line ->
         arrayOf(this, next).map {
-            it(line) ?: ((throw ParseFail).also {
+            it(line) ?: run {
                 line %= clone
-            })
+                throw ParseFail
+            }
         }
     }
 }

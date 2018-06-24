@@ -1,6 +1,7 @@
 package com.github.jnorthrup.parser.primitives
 
 import com.github.jnorthrup.parser.overloads.*
+import org.junit.Assert
 import org.junit.Test
 
 
@@ -18,13 +19,18 @@ class ParserUtilsKtTest {
     fun testThenThenOr() = ("a"() + "b" + "c" / "d") % Line("a", "b", "d")
 
     @Test
-    fun testThenThenOrFail() = try {
-        ("a"() + "b" + "c" / "d") % Line("a", "b", "a")
-    } catch (success: ParseFail) {
+    fun testThenThenOrFail() {
+        var success: Boolean = false
+        try {
+            ("a"() + "b" + "c" / "d") % Line("a", "b", "a")
+        } catch (perfect: ParseFail) {
+            success = true
+        }
+        Assert.assertTrue(success)
     }
 
     @Test
-    fun testNot() = (!"d"()) % Line("a")
+    fun testNot() = !"d"() % Line("a")
 
     @Test
     fun testNotThen() = (!"d" + "a") % Line("a")
@@ -56,4 +62,24 @@ class ParserUtilsKtTest {
 
     @Test
     fun testSeqThenOpt2() = (seq("a"())["-"()] + "b"()) % Line("a", "a", "a", "b")
+
+    @Test
+    fun testRangeOfOne() = ("a"()..":"()) % Line("a", "b")
+
+    @Test
+    fun testRangeOfThree() = ("a"()..":"()) % Line("a", ":", "a", ":", "a", "b")
+
+    @Test
+    fun testRangeFailOn0() {
+        var success = false
+        try {
+            ("a"()..":"()) % Line("b", "a", "a", "b")
+        } catch (e: ParseFail) {
+            success = true
+        }
+        Assert.assertTrue(success)
+    }
+
+    @Test
+    fun testRangeOf3ThenPartialSuccess() = ("a"()..":"()) % Line("a", ":", "a", ":", "a", ":", "b")
 }
