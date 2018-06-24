@@ -53,13 +53,17 @@ operator fun Line.plus(f: op) {
 /**
  * debug output
  */
-infix operator fun Line.rem(t: String) = (!this).joinToString(t).also(::println)
+infix operator fun Line.rem(t: String) = (!this).joinToString(t)
+
 
 /**
  * debug syntactic sugar
  */
 operator fun op.rem(line: Line) {
 
-    println(line % " " + "%" + deep(this(line)))
-}
 
+    val stackTrace = Thread.currentThread().stackTrace
+
+    val name = (op@ this).javaClass.enclosingMethod.name
+    println(stackTrace[2].methodName + "%" + name + "%" + line % " " + "%" + deep(this(line)))
+}

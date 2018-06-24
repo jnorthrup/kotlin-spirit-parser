@@ -81,7 +81,7 @@ fun lazySeq(line: Line, of: op): Sequence<Any> = generateSequence {
     }
 }
 
-/** one or Unit placeholder
+/** one or placeholder
  * @return  one element, potentially emptySequence*/
 fun opt(of: op): op = { line: Line ->
     (!line).let { clone ->

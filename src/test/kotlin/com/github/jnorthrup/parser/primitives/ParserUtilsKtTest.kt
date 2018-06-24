@@ -14,9 +14,14 @@ class ParserUtilsKtTest {
     @Test
     fun testThenThen1() = ("a"() + "b" + "c") % Line(listOf("a", "b", "c"))
 
-
     @Test
     fun testThenThenOr() = ("a"() + "b" + "c" / "d") % Line(listOf("a", "b", "d"))
+
+    @Test
+    fun testThenThenOrFail() = try {
+        ("a"() + "b" + "c" / "d") % Line(listOf("a", "b", "a"))
+    } catch (success: ParseFail) {
+    }
 
     @Test
     fun testNot() = (!"d"()) % Line(listOf("a"))
@@ -32,6 +37,13 @@ class ParserUtilsKtTest {
 
     @Test
     fun testOptThenSeq0() = (Unit["-"()] + "b"() + seq("a"())) % Line(listOf("b", "a", "a", "a"))
+
+    @Test
+    fun testLineResume() {
+        val line = Line("b", "a", "a", "a")
+        (Unit["-"()] + "b"()) % line
+        seq("a"()) % line
+    }
 
     @Test
     fun testOptThenSeq1() = (Unit["-"()] + "b"() + seq("a"())) % (Line(listOf("-", "b", "a", "a", "a")))
