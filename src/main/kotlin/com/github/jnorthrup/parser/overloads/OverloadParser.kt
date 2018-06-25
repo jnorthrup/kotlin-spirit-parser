@@ -23,9 +23,9 @@ operator fun String.rangeTo(s: Unit?) = this[seq(this())]
 operator fun String.rangeTo(s: op) = this[seq(s + this())]
 operator fun String.rangeTo(s: String) = this[seq(s() + this)]
 /**string-literal*/
-operator fun String.invoke(): op = { line ->
-    line.mark().first().takeIf(this::equals) ?: line.reset().let { null }
-}
+operator fun String.invoke(): op = lit(this)
+
+
 
 
 operator fun Unit.times(p: op) = first(p)

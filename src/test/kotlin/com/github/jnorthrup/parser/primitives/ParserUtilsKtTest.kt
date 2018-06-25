@@ -33,6 +33,15 @@ class ParserUtilsKtTest {
     fun testNot() = !"d"() % Line("a")
 
     @Test
+    fun testre() = re(".*") % Line("a")
+
+    @Test
+    fun testSeqLit() = seq(("a")()) % Line("a", "a", "c", "jimi", "hedrix")
+
+    @Test
+    fun testSeqRe() = seq(re(".*")) % Line("a", "b", "c", "jimi", "hedrix")
+
+    @Test
     fun testNotThen() = (!"d" + "a") % Line("a")
 
     @Test
@@ -60,8 +69,11 @@ class ParserUtilsKtTest {
     @Test
     fun testSeqThenOpt1() = seq("a"()["-"()] + "b"()) % Line("a", "-", "b")
 
+    /**
+     * a..[-]b
+     */
     @Test
-    fun testSeqThenOpt2() = (seq("a"())["-"()] + "b"()) % Line("a", "a", "a", "b")
+    fun testSeqThenOpt2() = (seq(lit("a"))[lit("-")] + "b"()) % Line("a", "a", "a", "b")
 
     @Test
     fun testRangeOfOne() = ("a"()..":"()) % Line("a", "b")

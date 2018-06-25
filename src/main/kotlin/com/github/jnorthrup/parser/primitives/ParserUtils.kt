@@ -8,18 +8,19 @@ typealias  op = (Line) -> Any?
 
 infix fun op.then(next: op): op = { line: Line ->
     (!line).let { clone: Line ->
-        arrayOf(this, next).map {
-            it(line) ?: run {
-                line %= clone
-                throw ParseFail
+        try {
+            arrayOf(this, next).map {
+                it(line) ?: run {
+                    line %= clone
+                    throw ParseFail
+                }
             }
+        } catch (fail: Exception) {
+            throw ParseFail
         }
     }
 }
 
-fun tx(function: op): op = { line: Line ->
-    (!line).let { clone -> function(line) ?: throw ParseFail.also { line %= (clone) } }
-}
 
 /** roll through a list or operands until one is not null. */
 fun first(vararg of: op): op = { line ->
@@ -41,22 +42,44 @@ fun first(vararg of: op): op = { line ->
  * simple regexer
  */
 fun re(lit: String): op = { line: Line ->
-    try {
-        line.mark().first().takeIf({ s -> s.matches(Regex(lit)) })
-    } catch (e: NoSuchElementException) {
-    } ?: throw ParseFail.also { line.reset() }
+    val regex = Regex(lit)
+
+    line.mark().first().takeIf({ s ->
+        s.matches(regex)
+    }) ?: run {
+        line.reset()
+        throw  ParseFail
+    }
+
 }
 
+fun lit(s: String): op = { line ->
+    val takeIf = line.mark().first().takeIf(s::equals)
+    when {
+        takeIf != null -> takeIf
+        else -> {
+            line.reset()
+            throw   ParseFail
+        }
+    }
+
+
+}
 
 fun negate(function: op): op = { line: Line ->
     (!line).let { clone ->
         val any = try {
             function(line)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
+            null
         }
         when (any) {
-            null -> emptySequence<Any?>()
-            else -> throw ParseFail.also { line %= clone }
+            null -> {
+                line %= clone; emptySequence<Any?>()
+            }
+            else -> {
+                line %= clone; throw ParseFail
+            }
         }
     }
 }
@@ -65,6 +88,7 @@ fun negate(function: op): op = { line: Line ->
 /** sequence
  *  @return Sequence of success */
 fun seq(of: op): op = { line: Line ->
+
     lazySeq(line, of).toList().takeUnless(List<Any>::isEmpty) ?: throw ParseFail
 }
 
