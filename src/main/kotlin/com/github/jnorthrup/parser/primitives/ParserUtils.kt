@@ -67,6 +67,31 @@ fun opt(of: op): op = { line: Line ->
 /** roll through a list or operands until one is not null. */
 fun first(vararg of: op): op = { line ->
     (!line).let { clone ->
+        var res: Any? = null
+        for (f in of) {
+            val pos = line.pos
+            try {
+
+                res = f(line)
+
+            } catch (e: Throwable) {
+                assert(line.pos == pos) { "did not cleanup before throw ParseFail  " + e.stackTrace[2] }
+                //but just in case
+                line.pos = pos
+            }
+            if (res != null) break
+        }
+        if (res != null) res
+        else {
+            line %= clone
+            throw ParseFail
+        }
+    }
+}
+
+/** roll through a list or operands until one is not null. */
+fun first2(vararg of: op): op = { line ->
+    (!line).let { clone ->
         var r: Any? = null
         for (f in of) {
             try {
@@ -106,7 +131,6 @@ fun lit(s: String): op = { line ->
         System.err.println("%%% " + s + " == " + first + " @ " + line.toString())
         takeIf
     } else {
-
         System.err.println("%%% " + s + " != " + first + " @ " + line.toString())
         line.reset()
         throw   ParseFail
