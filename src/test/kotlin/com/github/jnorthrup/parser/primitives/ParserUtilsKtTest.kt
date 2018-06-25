@@ -48,10 +48,10 @@ class ParserUtilsKtTest {
     fun testSeq() = seq("a"()) % Line("a", "a", "a")
 
     @Test
-    fun testThenSeq() = ("b"() + seq("a"())) % Line("b", "a", "a", "a")
+    fun testThenSeq() = ("b"["a"]) % Line("b", "a", "a", "a")
 
     @Test
-    fun testOptThenSeq0() = (Unit["-"()] + "b"() + seq("a"())) % Line("b", "a", "a", "a")
+    fun testOptThenSeq0() = (Unit["-"] + "b" + "a"..Unit) % Line("b", "a", "a", "a")
 
     @Test
     fun testLineResume() {
@@ -73,7 +73,7 @@ class ParserUtilsKtTest {
      * a..[-]b
      */
     @Test
-    fun testSeqThenOpt2() = (seq(lit("a"))[lit("-")] + "b"()) % Line("a", "a", "a", "b")
+    fun testSeqThenOpt2() = (("a"..Unit)["-"] + "b"()) % Line("a", "a", "a", "b")
 
     @Test
     fun testRangeOfOne() = ("a"()..":"()) % Line("a", "b")

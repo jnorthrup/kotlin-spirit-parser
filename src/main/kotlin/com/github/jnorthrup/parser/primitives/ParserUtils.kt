@@ -2,22 +2,64 @@ package com.github.jnorthrup.parser.primitives
 
 import com.github.jnorthrup.parser.overloads.RewindableSequence
 
+/**
+ * the rewindable sequence
+ *
+ */
 typealias Line = RewindableSequence<String>
+
+/**
+ * the main lambda that parses the Line
+ */
 typealias  op = (Line) -> Any?
 
-
+/**
+ * validates a pair of op in order
+ */
 infix fun op.then(next: op): op = { line: Line ->
     (!line).let { clone: Line ->
+        var res = emptyList<Any?>()
         try {
-            arrayOf(this, next).map {
-                it(line) ?: run {
-                    line %= clone
-                    throw ParseFail
-                }
+            var it1 = this(line)
+
+            if (it1 != null) res = res + it1
+            else {
+                throw ParseFail
+            }
+            it1 = next(line)
+            if (it1 != null) res + it1
+            else {
+                throw ParseFail
             }
         } catch (fail: Exception) {
+            line %= clone
             throw ParseFail
         }
+
+    }
+}
+
+
+/** one or placeholder
+ * @return  one element, potentially emptySequence*/
+fun opt(of: op): op = { line: Line ->
+    (!line).let { clone: Line ->
+        var res = emptyList<Any?>()
+        try {
+            System.err.println("%%% opt begin")
+
+            var it1 = of(line)
+            if (it1 != null) {
+                System.err.println("%%% opt adding" + it1)
+                res += it1
+            }
+        } catch (x: Signal) {
+            System.err.println("%%% opt exitting via signal " + x)
+            line %= clone
+        }
+
+        System.err.println("%%% opt returning " + res)
+        res
     }
 }
 
@@ -44,28 +86,39 @@ fun first(vararg of: op): op = { line ->
 fun re(lit: String): op = { line: Line ->
     val regex = Regex(lit)
 
-    line.mark().first().takeIf({ s ->
+    val takeIf = line.mark().first().takeIf { s ->
         s.matches(regex)
-    }) ?: run {
+    }
+    if (takeIf != null) takeIf
+    else {
         line.reset()
         throw  ParseFail
     }
-
 }
 
+/**
+ * string literal test
+ */
 fun lit(s: String): op = { line ->
-    val takeIf = line.mark().first().takeIf(s::equals)
-    when {
-        takeIf != null -> takeIf
-        else -> {
-            line.reset()
-            throw   ParseFail
-        }
+    val first = line.mark().first()
+    val takeIf = first.takeIf(s::equals)
+    if (takeIf != null) {
+        System.err.println("%%% " + s + " == " + first + " @ " + line.toString())
+        takeIf
+    } else {
+
+        System.err.println("%%% " + s + " != " + first + " @ " + line.toString())
+        line.reset()
+        throw   ParseFail
     }
 
 
 }
 
+/**
+ * negates a match and returns success
+ *
+ */
 fun negate(function: op): op = { line: Line ->
     (!line).let { clone ->
         val any = try {
@@ -73,13 +126,12 @@ fun negate(function: op): op = { line: Line ->
         } catch (e: Throwable) {
             null
         }
-        when (any) {
-            null -> {
-                line %= clone; emptySequence<Any?>()
-            }
-            else -> {
-                line %= clone; throw ParseFail
-            }
+        if (any == null) {
+            line %= clone
+            emptySequence<Any?>()
+        } else {
+            line %= clone
+            throw ParseFail
         }
     }
 }
@@ -88,41 +140,52 @@ fun negate(function: op): op = { line: Line ->
 /** sequence
  *  @return Sequence of success */
 fun seq(of: op): op = { line: Line ->
+    System.err.println("%%% seq starts with " + line.toString())
 
-    lazySeq(line, of).toList().takeUnless(List<Any>::isEmpty) ?: throw ParseFail
+
+    val toList = lazySeq(line, of).toList()
+    System.err.println("%%% seq returning " + "" + toList)
+    val takeUnless = toList.takeUnless(List<Any>::isEmpty)
+    if (takeUnless != null) {
+        System.err.println("%%% seq returning " + toList + " : " + line.toString())
+        takeUnless
+    } else {
+        System.err.println("%%% seq throwing ParseFail state: " + line.toString())
+        throw ParseFail
+    }
 }
 
+/**
+ * this parses a seuqnce forever, until null or signal
+ *
+ */
 fun lazySeq(line: Line, of: op): Sequence<Any> = generateSequence {
     (!line).let { clone ->
         try {
             try {
-                of(line)
+
+                val of1 = of(line)
+                System.err.println("%%% lazySeg+= " + of1)
+                of1
             } catch (eol: NoSuchElementException) {
+                System.err.println("%%% lazySeg hit eol ")
                 throw Eol
             }
         } catch (e: Signal) {
-            null.also { line %= clone }
+            if (e !is Eol) {
+                System.err.println("%%% lazySeg caught signal " + e)
+//                line %= clone
+            }
+            System.err.println("%%% lazySeg ending " + line.toString())
+            null
         }
     }
 }
 
-/** one or placeholder
- * @return  one element, potentially emptySequence*/
-fun opt(of: op): op = { line: Line ->
-    (!line).let { clone ->
-        try {
-            try {
-                of(line)
-            } catch (eol: NoSuchElementException) {
-                throw Eol
-            }
-        } catch (e: Signal) {
-            null.also { line %= clone }
-        }
-    } ?: emptySequence<Any?>()
-}
 
-
+/**
+ * these are monads affecting conrol flow
+ */
 open class Signal : Throwable()
 
 object Eol : Signal()
