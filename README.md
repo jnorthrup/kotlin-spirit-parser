@@ -1,0 +1,1 @@
+this is a project to explore the operator overloading and functional constructs of Kotlin to fashion a dsel similar to [e]bnf syntax to define a parser, its grammar, simple lexer/tokenizer, and semantic action bindings  
